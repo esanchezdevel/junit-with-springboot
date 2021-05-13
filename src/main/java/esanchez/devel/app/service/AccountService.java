@@ -12,5 +12,5 @@ public interface AccountService {
 	
 	BigDecimal reviewBalance(Long accountId);
 	
-	void transfer(Long accountNumberOrigin, Long accountNumberDestiny, BigDecimal amount);
+	void transfer(Long accountNumberOrigin, Long accountNumberDestiny, BigDecimal amount, Long bankId);
 }
