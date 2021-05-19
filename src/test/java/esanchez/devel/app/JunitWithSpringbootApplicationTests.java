@@ -12,6 +12,8 @@ import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import esanchez.devel.app.data.Data;
+import esanchez.devel.app.model.Account;
+import esanchez.devel.app.model.Bank;
 import esanchez.devel.app.repository.AccountRepository;
 import esanchez.devel.app.repository.BankRepository;
 import esanchez.devel.app.service.AccountService;
@@ -69,6 +71,28 @@ class JunitWithSpringbootApplicationTests {
 		
 		assertEquals("900", originBalance.toPlainString());
 		assertEquals("2100", destinyBalance.toPlainString());
+		
+		int total = accountService.reviewTotalTransfers(1L);
+		
+		assertEquals(1, total);
+		
+		/*
+		 * verify that the findById is executed 3 times with each id
+		 */
+		verify(accountRepository, times(3)).findById(1L);
+		verify(accountRepository, times(3)).findById(2L);
+		
+		/*
+		 * verify that the update method is executed 2 times
+		 */
+		verify(accountRepository, times(2)).update(any(Account.class));
+		
+		/*
+		 * verify that the findById is executed 2 times and update methods is executed
+		 * only 1 time (times is 1 by default)
+		 */
+		verify(bankRepository, times(2)).findById(1L);
+		verify(bankRepository).update(any(Bank.class));
 	}
 
 }
