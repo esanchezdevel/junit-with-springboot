@@ -93,6 +93,9 @@ class JunitWithSpringbootApplicationTests {
 		 */
 		verify(bankRepository, times(2)).findById(1L);
 		verify(bankRepository).update(any(Bank.class));
+		
+		verify(accountRepository, times(6)).findById(anyLong());
+		verify(accountRepository, never()).findAll();
 	}
 	
 	
@@ -134,6 +137,26 @@ class JunitWithSpringbootApplicationTests {
 		
 		verify(bankRepository, times(1)).findById(1L);
 		verify(bankRepository, never()).update(any(Bank.class));
+		
+		verify(accountRepository, times(5)).findById(anyLong());
+		verify(accountRepository, never()).findAll();
 	}
-
+	
+	@Test
+	void contextLoads3() {
+		when(accountRepository.findById(1L)).thenReturn(Data.createAccount001());
+		
+		Account account1 = accountService.findById(1L);
+		Account account2 = accountService.findById(1L);
+		
+		/*
+		 * 2 ways for check that 2 objects are equals
+		 */
+		assertSame(account1, account2);
+		assertTrue(account1 == account2);
+		assertEquals("Andres", account1.getName());
+		assertEquals("Andres", account2.getName());
+		
+		verify(accountRepository, times(2)).findById(1L);
+	}
 }
