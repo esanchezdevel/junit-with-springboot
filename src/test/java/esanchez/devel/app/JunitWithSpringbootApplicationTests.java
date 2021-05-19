@@ -7,11 +7,11 @@ import java.math.BigDecimal;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import esanchez.devel.app.data.Data;
+import esanchez.devel.app.exception.InsufficientBalanceException;
 import esanchez.devel.app.model.Account;
 import esanchez.devel.app.model.Bank;
 import esanchez.devel.app.repository.AccountRepository;
@@ -45,12 +45,12 @@ class JunitWithSpringbootApplicationTests {
 	@Test
 	void contextLoads() {
 		/*
-		 * "when" one method is exuted, "then return" a fixed data
+		 * "when" one method is executed, "then return" a fixed data
 		 */
-		when(accountRepository.findById(1L)).thenReturn(Data.ACCOUNT_001);
-		when(accountRepository.findById(2L)).thenReturn(Data.ACCOUNT_002);
+		when(accountRepository.findById(1L)).thenReturn(Data.createAccount001());
+		when(accountRepository.findById(2L)).thenReturn(Data.createAccount002());
 		
-		when(bankRepository.findById(1L)).thenReturn(Data.BANK);
+		when(bankRepository.findById(1L)).thenReturn(Data.createBank());
 		
 		/*
 		 * use the methods of our service code
@@ -93,6 +93,47 @@ class JunitWithSpringbootApplicationTests {
 		 */
 		verify(bankRepository, times(2)).findById(1L);
 		verify(bankRepository).update(any(Bank.class));
+	}
+	
+	
+	@Test
+	void contextLoads2() {
+
+		when(accountRepository.findById(1L)).thenReturn(Data.createAccount001());
+		when(accountRepository.findById(2L)).thenReturn(Data.createAccount002());
+		
+		when(bankRepository.findById(1L)).thenReturn(Data.createBank());
+		
+		BigDecimal originBalance = accountService.reviewBalance(1L);
+		BigDecimal destinyBalance = accountService.reviewBalance(2L);
+		
+		assertEquals("1000", originBalance.toPlainString());
+		assertEquals("2000", destinyBalance.toPlainString());
+		
+		/*
+		 * test thst the transfer method throws the expected exception
+		 */
+		assertThrows(InsufficientBalanceException.class, () -> {
+			accountService.transfer(1L, 2L, new BigDecimal("1200"), 1L);	
+		});
+		
+		originBalance = accountService.reviewBalance(1L);
+		destinyBalance = accountService.reviewBalance(2L);
+		
+		assertEquals("1000", originBalance.toPlainString());
+		assertEquals("2000", destinyBalance.toPlainString());
+		
+		int total = accountService.reviewTotalTransfers(1L);
+		
+		assertEquals(0, total);
+		
+		verify(accountRepository, times(3)).findById(1L);
+		verify(accountRepository, times(2)).findById(2L);
+		
+		verify(accountRepository, never()).update(any(Account.class));
+		
+		verify(bankRepository, times(1)).findById(1L);
+		verify(bankRepository, never()).update(any(Bank.class));
 	}
 
 }
