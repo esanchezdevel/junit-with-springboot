@@ -7,8 +7,11 @@ import java.math.BigDecimal;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 import esanchez.devel.app.data.Data;
 import esanchez.devel.app.exception.InsufficientBalanceException;
@@ -26,20 +29,37 @@ class JunitWithSpringbootApplicationTests {
 	 * Define our mocks and inject them into the service that 
 	 * will use them.
 	 */
-	@Mock
+//	@Mock
+//	AccountRepository accountRepository;
+//	
+//	@Mock
+//	BankRepository bankRepository;
+
+	@MockBean
 	AccountRepository accountRepository;
 	
-	@Mock
+	@MockBean
 	BankRepository bankRepository;
 	
+	/*
+	 * for use the @InjectMocks injection annotation we have to use the implementation of
+	 * the class instead of the Interface, because is the one that have the constructor with the
+	 * parameters that we are mocking
+	 */
+//	@InjectMocks
+//	AccountServiceImpl accountService;
+
+	/*
+	 * With spring boot we can inject the mocks using the @Autowired annotation instead of the @InjectMocks
+	 * For use this method is needed that the mocks are annotated as @MockBean, and the service class is annotated
+	 * with @Service or @Component annotations.
+	 * Also in that way we can use the interface instead of the implementation of the class
+	 */
+	@Autowired
 	AccountService accountService;
 	
 	@BeforeEach
 	void setUp() {
-		/*
-		 * create the object of the accountServiceImpl using our mocks
-		 */
-		accountService = new AccountServiceImpl(accountRepository, bankRepository);
 	}
 	
 	@Test

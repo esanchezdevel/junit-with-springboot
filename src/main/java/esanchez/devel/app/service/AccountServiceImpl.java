@@ -3,12 +3,14 @@ package esanchez.devel.app.service;
 import java.math.BigDecimal;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import esanchez.devel.app.model.Account;
 import esanchez.devel.app.model.Bank;
 import esanchez.devel.app.repository.AccountRepository;
 import esanchez.devel.app.repository.BankRepository;
 
+@Service
 public class AccountServiceImpl implements AccountService {
 
 	@Autowired
@@ -17,6 +19,9 @@ public class AccountServiceImpl implements AccountService {
 	@Autowired
 	private BankRepository bankRepository;
 	
+	/*
+	 * the constructor with parameters is needed for inject the Mocks in the junit tests
+	 */
 	public AccountServiceImpl(AccountRepository accountRepository, BankRepository bankRepository) {
 		super();
 		this.accountRepository = accountRepository;
