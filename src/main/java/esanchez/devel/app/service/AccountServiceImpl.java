@@ -2,9 +2,11 @@ package esanchez.devel.app.service;
 
 import java.math.BigDecimal;
 
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import esanchez.devel.app.exception.EntityNotFoundException;
 import esanchez.devel.app.model.Account;
 import esanchez.devel.app.model.Bank;
 import esanchez.devel.app.repository.AccountRepository;
@@ -29,37 +31,37 @@ public class AccountServiceImpl implements AccountService {
 	}
 
 	@Override
-	public Account findById(Long id) {
-		return accountRepository.findById(id);
+	public Account findById(Long id) throws EntityNotFoundException {
+		return accountRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("entity not found"));
 	}
 
 	@Override
-	public int reviewTotalTransfers(Long bankId) {
-		Bank bank = bankRepository.findById(bankId);
+	public int reviewTotalTransfers(Long bankId) throws EntityNotFoundException {
+		Bank bank = bankRepository.findById(bankId).orElseThrow(() -> new EntityNotFoundException("entity not found"));
 		
 		return bank.getTotalTransfer();
 	}
 
 	@Override
-	public BigDecimal reviewBalance(Long accountId) {
-		Account account = accountRepository.findById(accountId);
+	public BigDecimal reviewBalance(Long accountId) throws EntityNotFoundException {
+		Account account = accountRepository.findById(accountId).orElseThrow(() -> new EntityNotFoundException("entity not found"));
 		return account.getBalance();
 	}
 
 	@Override
-	public void transfer(Long accountNumberOrigin, Long accountNumberDestiny, BigDecimal amount, Long bankId) {
-		Account originAccount = accountRepository.findById(accountNumberOrigin);
+	public void transfer(Long accountNumberOrigin, Long accountNumberDestiny, BigDecimal amount, Long bankId) throws EntityNotFoundException {
+		Account originAccount = accountRepository.findById(accountNumberOrigin).orElseThrow(() -> new EntityNotFoundException("entity not found"));
 		originAccount.debit(amount);
-		accountRepository.update(originAccount);
+		accountRepository.save(originAccount);
 		
-		Account destinyAccount = accountRepository.findById(accountNumberDestiny);
+		Account destinyAccount = accountRepository.findById(accountNumberDestiny).orElseThrow(() -> new EntityNotFoundException("entity not found"));
 		destinyAccount.credit(amount);
-		accountRepository.update(destinyAccount);
+		accountRepository.save(destinyAccount);
 		
-		Bank bank = bankRepository.findById(bankId);
+		Bank bank = bankRepository.findById(bankId).orElseThrow(() -> new EntityNotFoundException("entity not found"));
 		int totalTransfer = bank.getTotalTransfer();
 		bank.setTotalTransfer(++totalTransfer);
-		bankRepository.update(bank);
+		bankRepository.save(bank);
 	}
 
 }

@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -67,10 +68,10 @@ class JunitWithSpringbootApplicationTests {
 		/*
 		 * "when" one method is executed, "then return" a fixed data
 		 */
-		when(accountRepository.findById(1L)).thenReturn(Data.createAccount001());
-		when(accountRepository.findById(2L)).thenReturn(Data.createAccount002());
+		when(accountRepository.findById(1L)).thenReturn(Optional.of(Data.createAccount001()));
+		when(accountRepository.findById(2L)).thenReturn(Optional.of(Data.createAccount002()));
 		
-		when(bankRepository.findById(1L)).thenReturn(Data.createBank());
+		when(bankRepository.findById(1L)).thenReturn(Optional.of(Data.createBank()));
 		
 		/*
 		 * use the methods of our service code
@@ -105,14 +106,14 @@ class JunitWithSpringbootApplicationTests {
 		/*
 		 * verify that the update method is executed 2 times
 		 */
-		verify(accountRepository, times(2)).update(any(Account.class));
+		verify(accountRepository, times(2)).save(any(Account.class));
 		
 		/*
 		 * verify that the findById is executed 2 times and update methods is executed
 		 * only 1 time (times is 1 by default)
 		 */
 		verify(bankRepository, times(2)).findById(1L);
-		verify(bankRepository).update(any(Bank.class));
+		verify(bankRepository).save(any(Bank.class));
 		
 		verify(accountRepository, times(6)).findById(anyLong());
 		verify(accountRepository, never()).findAll();
@@ -122,10 +123,10 @@ class JunitWithSpringbootApplicationTests {
 	@Test
 	void contextLoads2() {
 
-		when(accountRepository.findById(1L)).thenReturn(Data.createAccount001());
-		when(accountRepository.findById(2L)).thenReturn(Data.createAccount002());
+		when(accountRepository.findById(1L)).thenReturn(Optional.of(Data.createAccount001()));
+		when(accountRepository.findById(2L)).thenReturn(Optional.of(Data.createAccount002()));
 		
-		when(bankRepository.findById(1L)).thenReturn(Data.createBank());
+		when(bankRepository.findById(1L)).thenReturn(Optional.of(Data.createBank()));
 		
 		BigDecimal originBalance = accountService.reviewBalance(1L);
 		BigDecimal destinyBalance = accountService.reviewBalance(2L);
@@ -153,10 +154,10 @@ class JunitWithSpringbootApplicationTests {
 		verify(accountRepository, times(3)).findById(1L);
 		verify(accountRepository, times(2)).findById(2L);
 		
-		verify(accountRepository, never()).update(any(Account.class));
+		verify(accountRepository, never()).save(any(Account.class));
 		
 		verify(bankRepository, times(1)).findById(1L);
-		verify(bankRepository, never()).update(any(Bank.class));
+		verify(bankRepository, never()).save(any(Bank.class));
 		
 		verify(accountRepository, times(5)).findById(anyLong());
 		verify(accountRepository, never()).findAll();
@@ -164,7 +165,7 @@ class JunitWithSpringbootApplicationTests {
 	
 	@Test
 	void contextLoads3() {
-		when(accountRepository.findById(1L)).thenReturn(Data.createAccount001());
+		when(accountRepository.findById(1L)).thenReturn(Optional.of(Data.createAccount001()));
 		
 		Account account1 = accountService.findById(1L);
 		Account account2 = accountService.findById(1L);
