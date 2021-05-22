@@ -2,6 +2,7 @@ package esanchez.devel.app;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -65,5 +66,24 @@ public class IntegrationJPATest {
 		
 		assertFalse(accounts.isEmpty());
 		assertEquals(2, accounts.size());
+	}
+	
+	@Test
+	void testSave() {
+		
+		/*
+		 * first we save a new account
+		 */
+		Account accountPep = new Account(null, "Pep", new BigDecimal("3000"));
+		
+		accountRepository.save(accountPep);
+		
+		/*
+		 * then we check that the save was done searching the new account in the database
+		 */
+		Account account = accountRepository.findByName("Pep").orElseThrow();
+		
+		assertEquals("Pep", account.getName());
+		assertEquals("3000", account.getBalance().toPlainString());
 	}
 }
