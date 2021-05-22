@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import esanchez.devel.app.exception.EntityNotFoundException;
 import esanchez.devel.app.model.Account;
@@ -31,11 +32,13 @@ public class AccountServiceImpl implements AccountService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public Account findById(Long id) throws EntityNotFoundException {
 		return accountRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("entity not found"));
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public int reviewTotalTransfers(Long bankId) throws EntityNotFoundException {
 		Bank bank = bankRepository.findById(bankId).orElseThrow(() -> new EntityNotFoundException("entity not found"));
 		
@@ -43,12 +46,14 @@ public class AccountServiceImpl implements AccountService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public BigDecimal reviewBalance(Long accountId) throws EntityNotFoundException {
 		Account account = accountRepository.findById(accountId).orElseThrow(() -> new EntityNotFoundException("entity not found"));
 		return account.getBalance();
 	}
 
 	@Override
+	@Transactional
 	public void transfer(Long accountNumberOrigin, Long accountNumberDestiny, BigDecimal amount, Long bankId) throws EntityNotFoundException {
 		Account originAccount = accountRepository.findById(accountNumberOrigin).orElseThrow(() -> new EntityNotFoundException("entity not found"));
 		originAccount.debit(amount);
