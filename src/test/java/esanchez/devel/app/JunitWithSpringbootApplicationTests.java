@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -179,5 +180,44 @@ class JunitWithSpringbootApplicationTests {
 		assertEquals("Andres", account2.getName());
 		
 		verify(accountRepository, times(2)).findById(1L);
+	}
+	
+	@Test
+	void testFindAll() {
+		List<Account> data = List.of(Data.createAccount001(), Data.createAccount002());
+		when(accountRepository.findAll()).thenReturn(data);
+		
+		List<Account> accounts = accountService.findAll();
+		
+		assertFalse(accounts.isEmpty());
+		assertEquals(2, accounts.size());
+		assertTrue(accounts.contains(Data.createAccount001()));
+		
+		verify(accountRepository).findAll();
+	}
+	
+	@Test
+	void testSave() {
+		
+		Account data = new Account(null, "Tom", new BigDecimal("1000"));
+		
+		when(accountService.save(any())).then(invocation -> {
+			/*
+			 * As the account can have an incremental id, with this 
+			 * lambda expression we can set the id returned when save it 
+			 */
+			Account a = invocation.getArgument(0);
+			a.setId(3L);
+			return a;
+		});
+		
+		Account account = accountService.save(data);
+
+		assertTrue(account != null);
+		assertEquals(3L, account.getId());
+		assertEquals("Tom", account.getName());
+		assertEquals("1000", account.getBalance().toPlainString());
+		
+		verify(accountRepository).save(any());
 	}
 }

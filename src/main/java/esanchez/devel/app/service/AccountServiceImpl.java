@@ -71,14 +71,12 @@ public class AccountServiceImpl implements AccountService {
 
 	@Override
 	public List<Account> findAll() {
-		// TODO Auto-generated method stub
-		return null;
+		return accountRepository.findAll();
 	}
 
 	@Override
 	public Account save(Account account) {
-		// TODO Auto-generated method stub
-		return null;
+		return accountRepository.save(account);
 	}
 
 }
