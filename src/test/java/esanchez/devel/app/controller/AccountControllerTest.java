@@ -7,6 +7,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -65,13 +67,23 @@ public class AccountControllerTest {
 		transfer.setBankId(1L);
 		transfer.setAmount(new BigDecimal("100"));
 		
+		Map<String, Object> response = new HashMap<>();
+		response.put("date", LocalDate.now().toString());
+		response.put("status", "success");
+		response.put("message", "transfer done successfully");
+		response.put("transaction", transfer);
+		
+		System.out.println(objectMapper.writeValueAsString("Response: " + response));
+
+		
 		mvc.perform(post("/v1/account/transfer").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(transfer))) //Request
-			.andExpect(status().isOk())
-			.andExpect(content().contentType(MediaType.APPLICATION_JSON))
-			.andExpect(jsonPath("$.date").value(LocalDate.now().toString()))
+			.andExpect(status().isOk()) //check the http status
+			.andExpect(content().contentType(MediaType.APPLICATION_JSON)) //check the contentType received
+			.andExpect(jsonPath("$.date").value(LocalDate.now().toString())) //check that one value of the json is the expected
 			.andExpect(jsonPath("$.status").value("success"))
 			.andExpect(jsonPath("$.message").value("transfer done successfully"))
-			.andExpect(jsonPath("$.transaction.originAccountId").value(transfer.getOriginAccountId()));
+			.andExpect(jsonPath("$.transaction.originAccountId").value(transfer.getOriginAccountId()))
+			.andExpect(content().json(objectMapper.writeValueAsString(response))); //check that the full json is the one expected
 
 	}
 }
