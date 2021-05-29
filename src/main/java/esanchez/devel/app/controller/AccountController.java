@@ -3,6 +3,7 @@ package esanchez.devel.app.controller;
 
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,4 +48,17 @@ public class AccountController {
 		
 		return ResponseEntity.ok(response);
 	}
+	
+	@GetMapping
+	@ResponseStatus(HttpStatus.OK)
+	public List<Account> get() {
+		return accountService.findAll();
+	}
+	
+	@PostMapping
+	@ResponseStatus(HttpStatus.CREATED)
+	public Account create(@RequestBody Account account) {
+		return accountService.save(account);
+	}
+	
 }
