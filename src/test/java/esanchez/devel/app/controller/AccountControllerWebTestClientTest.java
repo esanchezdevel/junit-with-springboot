@@ -173,4 +173,71 @@ public class AccountControllerWebTestClientTest {
 			.hasSize(2)
 			.value(hasSize(2));
 	}
+	
+	
+	@Test
+	@Order(6)
+	void testCreate() {
+		
+		Account account = new Account(null, "Rob", new BigDecimal("1000"));
+		
+		webTestClient.post().uri("/v1/account").contentType(MediaType.APPLICATION_JSON).bodyValue(account).exchange()
+			.expectStatus().isCreated()
+			.expectHeader().contentType(MediaType.APPLICATION_JSON)
+			.expectBody()
+			.jsonPath("$.name").isEqualTo("Rob")
+			.jsonPath("$.id").isEqualTo(3)
+			.jsonPath("$.balance").isEqualTo(1000);
+	}
+	
+	
+	@Test
+	@Order(7)
+	void testCreate2() {
+		
+		Account account = new Account(null, "Peter", new BigDecimal("2000"));
+		
+		webTestClient.post().uri("/v1/account").contentType(MediaType.APPLICATION_JSON).bodyValue(account).exchange()
+			.expectStatus().isCreated()
+			.expectHeader().contentType(MediaType.APPLICATION_JSON)
+			.expectBody(Account.class) //if we put the expectBody class type, then with the resp.getResponseBody() we have an Account automatically parsed
+			.consumeWith(resp -> {
+				
+				Account a = resp.getResponseBody();
+				
+				assertNotNull(a);
+				assertEquals("Peter", a.getName());
+				assertEquals(4L, a.getId());
+				assertEquals(2000, a.getBalance().intValue());
+			});
+	}
+	
+	
+	@Test
+	@Order(8)
+	void testDelete() {
+		
+		//check that we have 4 elements
+		webTestClient.get().uri("/v1/account").exchange()
+			.expectStatus().isOk()
+			.expectBodyList(Account.class)
+			.hasSize(4);
+		
+		//check delete
+		webTestClient.delete().uri("/v1/account/3").exchange()
+			.expectStatus().isNoContent()
+			.expectBody().isEmpty();
+		
+		//check that after delete, we have 3 elements
+		webTestClient.get().uri("/v1/account").exchange()
+		.expectStatus().isOk()
+		.expectBodyList(Account.class)
+		.hasSize(3);
+		
+		//check that element with id=3 was deleted
+		webTestClient.get().uri("/v1/account/3").exchange()
+			//.expectStatus().is5xxServerError();
+			.expectStatus().isNotFound()
+			.expectBody().isEmpty();
+	}
 }
