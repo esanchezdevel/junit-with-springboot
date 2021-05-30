@@ -11,6 +11,9 @@ import java.util.Map;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
+import org.junit.jupiter.api.Order;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
@@ -21,12 +24,14 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import esanchez.devel.app.model.Account;
 import esanchez.devel.app.model.dto.TransferDTO;
 
 /*
  * For tests with WebTestClient we need to have our application running, because
  * we will make real integration tests, requesting to the real url of our services.
  */
+@TestMethodOrder(OrderAnnotation.class) //for order the execution of the tests
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT) //for get a free port
 public class AccountControllerWebTestClientTest {
 
@@ -41,6 +46,7 @@ public class AccountControllerWebTestClientTest {
 	}
 	
 	@Test
+	@Order(1)
 	void testTransfer() throws JsonProcessingException {
 		
 		TransferDTO dto = new TransferDTO();
@@ -85,5 +91,43 @@ public class AccountControllerWebTestClientTest {
 			.jsonPath("$.transaction.originAccountId").isEqualTo(1L)
 			.jsonPath("$.date").isEqualTo(LocalDate.now().toString())
 			.json(objectMapper.writeValueAsString(response));
+	}
+	
+	
+	@Test
+	@Order(2)
+	void testDetail() throws JsonProcessingException {
+		
+		Account account = new Account(1L, "Andres", new BigDecimal("900"));
+		
+		
+		webTestClient.get().uri("/v1/account/1")
+			.exchange()
+			.expectStatus().isOk()
+			.expectHeader().contentType(MediaType.APPLICATION_JSON)
+			.expectBody()
+			.jsonPath("$.name").isEqualTo("Andres")
+			.jsonPath("$.balance").isEqualTo(900)
+			.json(objectMapper.writeValueAsString(account));
+	}
+	
+	/*
+	 * test using consumeWith
+	 */
+	@Test
+	@Order(3)
+	void testDetail2() {
+		
+		webTestClient.get().uri("/v1/account/2")
+			.exchange()
+			.expectStatus().isOk()
+			.expectHeader().contentType(MediaType.APPLICATION_JSON)
+			.expectBody(Account.class)
+			.consumeWith(resp -> {
+				Account account = resp.getResponseBody();
+				
+				assertEquals("John", account.getName());
+				assertEquals("2100.00", account.getBalance().toPlainString());
+			});
 	}
 }
