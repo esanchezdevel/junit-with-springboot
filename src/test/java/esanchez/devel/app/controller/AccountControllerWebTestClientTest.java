@@ -1,12 +1,13 @@
 package esanchez.devel.app.controller;
 
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -129,5 +130,47 @@ public class AccountControllerWebTestClientTest {
 				assertEquals("John", account.getName());
 				assertEquals("2100.00", account.getBalance().toPlainString());
 			});
+	}
+	
+	@Test
+	@Order(4)
+	void testGet() {
+		
+		webTestClient.get().uri("/v1/account").exchange()
+			.expectStatus().isOk()
+			.expectHeader().contentType(MediaType.APPLICATION_JSON)
+			.expectBody()
+			.jsonPath("$[0].name").isEqualTo("Andres")
+			.jsonPath("$[0].id").isEqualTo(1)
+			.jsonPath("$[0].balance").isEqualTo(900)
+			.jsonPath("$[1].name").isEqualTo("John")
+			.jsonPath("$[1].id").isEqualTo(2)
+			.jsonPath("$[1].balance").isEqualTo(2100)
+			.jsonPath("$").isArray()
+			.jsonPath("$").value(hasSize(2));
+	}
+	
+	@Test
+	@Order(5)
+	void testGet2() {
+		
+		webTestClient.get().uri("/v1/account").exchange()
+			.expectStatus().isOk()
+			.expectHeader().contentType(MediaType.APPLICATION_JSON)
+			.expectBodyList(Account.class) //when we will receive a list, the expectBodyList is needed
+			.consumeWith(resp -> {
+				List<Account> accounts = resp.getResponseBody();
+				
+				assertEquals(2, accounts.size());
+				assertEquals("Andres", accounts.get(0).getName());
+				assertEquals(1L, accounts.get(0).getId());
+				assertEquals(900, accounts.get(0).getBalance().intValue());
+				assertEquals("John", accounts.get(1).getName());
+				assertEquals(2L, accounts.get(1).getId());
+				assertEquals(2100, accounts.get(1).getBalance().intValue());
+			})
+			//other methods for check the list size
+			.hasSize(2)
+			.value(hasSize(2));
 	}
 }
