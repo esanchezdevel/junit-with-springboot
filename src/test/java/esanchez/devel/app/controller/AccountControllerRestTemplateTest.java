@@ -139,4 +139,20 @@ public class AccountControllerRestTemplateTest {
 		assertEquals("John", jsonNode.get(1).path("name").asText());
 		assertEquals("2100.0", jsonNode.get(1).path("balance").asText());
 	}
+	
+	@Test
+	@Order(4)
+	void testSave() {
+		Account account = new Account(null, "Rob", new BigDecimal("3800"));
+		ResponseEntity<Account> response = testRestTemplate.postForEntity("/v1/account", account, Account.class);
+		
+		assertEquals(HttpStatus.CREATED, response.getStatusCode());
+		assertEquals(MediaType.APPLICATION_JSON, response.getHeaders().getContentType());
+		
+		Account responseAccount = response.getBody();
+		
+		assertEquals("Rob", responseAccount.getName());
+		assertEquals("3800", responseAccount.getBalance().toPlainString());
+		assertEquals(3L, responseAccount.getId());
+	}
 }
