@@ -4,10 +4,11 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
@@ -106,7 +107,36 @@ public class AccountControllerRestTemplateTest {
 		assertEquals("900.00", account.getBalance().toPlainString());
 		
 		assertEquals(new Account(1L, "Andres", new BigDecimal("900.00")), account);
+	}
+	
+	@Test
+	@Order(3)
+	void testGet() throws JsonMappingException, JsonProcessingException {
+		ResponseEntity<Account[]> response = testRestTemplate.getForEntity("/v1/account", Account[].class);
 		
+		List<Account> accounts = Arrays.asList(response.getBody());
 		
+		assertEquals(HttpStatus.OK, response.getStatusCode());
+		assertEquals(MediaType.APPLICATION_JSON, response.getHeaders().getContentType());
+		
+		assertEquals(2, accounts.size());
+		assertEquals("Andres", accounts.get(0).getName());
+		assertEquals(1L, accounts.get(0).getId());
+		assertEquals("900.00", accounts.get(0).getBalance().toPlainString());
+		assertEquals("John", accounts.get(1).getName());
+		assertEquals(2L, accounts.get(1).getId());
+		assertEquals("2100.00", accounts.get(1).getBalance().toPlainString());
+		
+		/*
+		 * convert the list in a json for check also with jsonNode
+		 */
+		JsonNode jsonNode = objectMapper.readTree(objectMapper.writeValueAsString(accounts));
+		assertEquals(1L, jsonNode.get(0).path("id").asLong());
+		assertEquals("Andres", jsonNode.get(0).path("name").asText());
+		assertEquals("900.0", jsonNode.get(0).path("balance").asText());
+		
+		assertEquals(2L, jsonNode.get(1).path("id").asLong());
+		assertEquals("John", jsonNode.get(1).path("name").asText());
+		assertEquals("2100.0", jsonNode.get(1).path("balance").asText());
 	}
 }
