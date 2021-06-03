@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import esanchez.devel.app.model.Account;
 import esanchez.devel.app.model.dto.TransferDTO;
 
 @TestMethodOrder(OrderAnnotation.class)
@@ -88,6 +89,24 @@ public class AccountControllerRestTemplateTest {
 		response2.put("transaction", transferDTO);
 		
 		assertEquals(objectMapper.writeValueAsString(response2), json);
+		
+	}
+	
+	@Test
+	@Order(2)
+	void testDetail() {
+		ResponseEntity<Account> response = testRestTemplate.getForEntity("/v1/account/1", Account.class);
+		Account account = response.getBody();
+		
+		assertEquals(HttpStatus.OK, response.getStatusCode());
+		assertEquals(MediaType.APPLICATION_JSON, response.getHeaders().getContentType());
+		assertNotNull(account);
+		assertEquals(1L, account.getId());
+		assertEquals("Andres", account.getName());
+		assertEquals("900.00", account.getBalance().toPlainString());
+		
+		assertEquals(new Account(1L, "Andres", new BigDecimal("900.00")), account);
+		
 		
 	}
 }
