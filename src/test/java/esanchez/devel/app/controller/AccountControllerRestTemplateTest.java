@@ -13,12 +13,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -31,6 +33,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import esanchez.devel.app.model.Account;
 import esanchez.devel.app.model.dto.TransferDTO;
 
+@Tag("integration_rest_template") //For exclude in the Run Configurations, and avoid conflict because we have 2 integrations tests classes 
 @TestMethodOrder(OrderAnnotation.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 public class AccountControllerRestTemplateTest {
@@ -154,5 +157,35 @@ public class AccountControllerRestTemplateTest {
 		assertEquals("Rob", responseAccount.getName());
 		assertEquals("3800", responseAccount.getBalance().toPlainString());
 		assertEquals(3L, responseAccount.getId());
+	}
+	
+	@Test
+	@Order(5)
+	void testDelete() {
+		ResponseEntity<Account[]> response = testRestTemplate.getForEntity("/v1/account", Account[].class);
+		List<Account> accounts = Arrays.asList(response.getBody());
+		assertEquals(3, accounts.size());
+		
+		
+		Map<String, String> pathVariables = new HashMap<String, String>();
+		pathVariables.put("id", "3");
+		//first method to execute the delete
+		//testRestTemplate.delete("/v1/account/3");
+		//another way to execute the delete with exchange method
+		//ResponseEntity<Void> exchange = testRestTemplate.exchange("/v1/account/3", HttpMethod.DELETE, null, Void.class);
+		//Now using the pathVariable as a variable in a hashmap
+		ResponseEntity<Void> exchange = testRestTemplate.exchange("/v1/account/{id}", HttpMethod.DELETE, null, Void.class, pathVariables);
+
+		
+		assertEquals(HttpStatus.NO_CONTENT, exchange.getStatusCode());
+		
+		response = testRestTemplate.getForEntity("/v1/account", Account[].class);
+		accounts = Arrays.asList(response.getBody());
+		assertEquals(2, accounts.size());
+		
+		ResponseEntity<Account> responseAccount = testRestTemplate.getForEntity("/v1/account/3", Account.class);
+		
+		assertEquals(HttpStatus.NOT_FOUND, responseAccount.getStatusCode());
+		assertFalse(responseAccount.hasBody());
 	}
 }

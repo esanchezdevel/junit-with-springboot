@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
@@ -32,6 +33,7 @@ import esanchez.devel.app.model.dto.TransferDTO;
  * For tests with WebTestClient we need to have our application running, because
  * we will make real integration tests, requesting to the real url of our services.
  */
+@Tag("integration_web_test_client")
 @TestMethodOrder(OrderAnnotation.class) //for order the execution of the tests
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT) //for get a free port
 public class AccountControllerWebTestClientTest {
